@@ -1,14 +1,21 @@
-from split_delimiter import split_nodes_delimiter
+from inline_markdown import extract_markdown_images, split_nodes_image
 from textnode import TextNode, TextType
 
-node = TextNode("This is text with a `code block` word", TextType.TEXT)
-new_nodes_one = split_nodes_delimiter([node], "`", TextType.CODE)
-
-node_three = TextNode("This `line` has multiple `code blocks`", TextType.TEXT)
-new_nodes = split_nodes_delimiter([node_three], "`", TextType.CODE)
+node = TextNode(
+        "This is text with an ![image](https://i.imgur.com/zjjcJKZ.png) and another ![second image](https://i.imgur.com/3elNhQu.png)",
+        TextType.TEXT,
+    )
+    
+new_nodes = split_nodes_image([node])
 print(new_nodes)
-[
-    TextNode("This is text with a ", TextType.TEXT),
-    TextNode("code block", TextType.CODE),
-    TextNode(" word", TextType.TEXT),
-]
+(
+    [
+        TextNode("This is text with an ", TextType.TEXT),
+        TextNode("image", TextType.IMAGE, "https://i.imgur.com/zjjcJKZ.png"),
+        TextNode(" and another ", TextType.TEXT),
+        TextNode(
+            "second image", TextType.IMAGE, "https://i.imgur.com/3elNhQu.png"
+        ),
+    ],
+    new_nodes,
+)
