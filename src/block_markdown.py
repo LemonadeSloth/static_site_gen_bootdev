@@ -1,5 +1,6 @@
-from enum import Enum
 import re
+from enum import Enum
+
 
 class BlockType(Enum):
     PARAGRAPH = "paragraph"
@@ -12,12 +13,8 @@ class BlockType(Enum):
 
 def markdown_to_blocks(markdown: str) -> list[str]:
     split_blocks = markdown.split("\n\n")
-    return list(
-        filter(
-            lambda x: x != "",
-            map(lambda x: x.strip(), split_blocks)
-        )
-    )
+    return list(filter(lambda x: x != "", map(lambda x: x.strip(), split_blocks)))
+
 
 def markdown_to_blocks_bootdev_solution(markdown: str) -> list[str]:
     blocks = markdown.split("\n\n")
@@ -29,7 +26,8 @@ def markdown_to_blocks_bootdev_solution(markdown: str) -> list[str]:
         filtered_blocks.append(block)
     return filtered_blocks
 
-#bootdev solution, I added it here since it differes quite a bit from mine
+
+# bootdev solution, I added it here since it differes quite a bit from mine
 def block_to_type_no_regex(block: str) -> BlockType:
     lines = block.split("\n")
 
@@ -56,9 +54,12 @@ def block_to_type_no_regex(block: str) -> BlockType:
         return BlockType.ORDERED_LIST
     return BlockType.PARAGRAPH
 
-#mine solution, works but is not as pretty :(
+
+# mine solution, works but is not as pretty
+
+
 def block_to_type_no_regex_mine(block: str) -> BlockType:
-    #For headings
+    # For headings
     if block[0] == "#":
         for i in range(1, 6):
             if block[i] == "#":
@@ -71,10 +72,10 @@ def block_to_type_no_regex_mine(block: str) -> BlockType:
             else:
                 break
         return BlockType.PARAGRAPH
-    #for code
+    # for code
     elif block[:4] == "```\n" and block[-4:] == "\n```":
         return BlockType.CODE
-    #for quote
+    # for quote
     elif block[0] == ">":
         valid = True
         for line in block.splitlines():
@@ -85,7 +86,7 @@ def block_to_type_no_regex_mine(block: str) -> BlockType:
             return BlockType.QUOTE
         else:
             return BlockType.PARAGRAPH
-    #for unordered lists
+    # for unordered lists
     elif block[:2] == "- ":
         valid = True
         for line in block.splitlines():
@@ -96,7 +97,7 @@ def block_to_type_no_regex_mine(block: str) -> BlockType:
             return BlockType.UNORDERED_LIST
         else:
             return BlockType.PARAGRAPH
-    #for ordered lists
+    # for ordered lists
     elif block[:3] == "1. ":
         start = 1
         valid = True
@@ -113,6 +114,7 @@ def block_to_type_no_regex_mine(block: str) -> BlockType:
     else:
         return BlockType.PARAGRAPH
 
+
 def block_to_type_regex(block: str) -> BlockType:
     if re.match(r"```\n.*\n```", block, re.DOTALL):
         return BlockType.CODE
@@ -123,6 +125,8 @@ def block_to_type_regex(block: str) -> BlockType:
     elif re.match(r"\A(?:^- .*\n*)+\Z", block, re.MULTILINE):
         return BlockType.UNORDERED_LIST
     elif re.match(r"\A(?:^[1-9]*\. .*\n*)+\Z", block, re.MULTILINE):
-        return BlockType.ORDERED_LIST #doesn't enforce numerical order of items in the list
+        return (
+            BlockType.ORDERED_LIST
+        )  # doesn't enforce numerical order of items in the list
     else:
         return BlockType.PARAGRAPH
