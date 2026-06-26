@@ -19,14 +19,51 @@ def markdown_to_blocks(markdown: str) -> list[str]:
         )
     )
 
+def markdown_to_blocks_bootdev_solution(markdown: str) -> list[str]:
+    blocks = markdown.split("\n\n")
+    filtered_blocks = []
+    for block in blocks:
+        if block == "":
+            continue
+        block = block.strip()
+        filtered_blocks.append(block)
+    return filtered_blocks
 
+#bootdev solution, I added it here since it differes quite a bit from mine
 def block_to_type_no_regex(block: str) -> BlockType:
+    lines = block.split("\n")
+
+    if block.startswith(("# ", "## ", "### ", "#### ", "##### ", "###### ")):
+        return BlockType.HEADING
+    if len(lines) > 1 and lines[0].startswith("```") and lines[-1].startswith("```"):
+        return BlockType.CODE
+    if block.startswith(">"):
+        for line in lines:
+            if not line.startswith(">"):
+                return BlockType.PARAGRAPH
+        return BlockType.QUOTE
+    if block.startswith("- "):
+        for line in lines:
+            if not line.startswith("- "):
+                return BlockType.PARAGRAPH
+        return BlockType.UNORDERED_LIST
+    if block.startswith("1. "):
+        i = 1
+        for line in lines:
+            if not line.startswith(f"{i}. "):
+                return BlockType.PARAGRAPH
+            i += 1
+        return BlockType.ORDERED_LIST
+    return BlockType.PARAGRAPH
+
+#mine solution, works but is not as pretty :(
+def block_to_type_no_regex_mine(block: str) -> BlockType:
     #For headings
     if block[0] == "#":
-        for i in range(1,6):
+        for i in range(1, 6):
             if block[i] == "#":
-                if i == 6:
-                    if block[7] == " ":
+                if i == 5:
+                    if block[6] == " ":
                         return BlockType.HEADING
                 continue
             elif block[i] == " ":
@@ -49,10 +86,10 @@ def block_to_type_no_regex(block: str) -> BlockType:
         else:
             return BlockType.PARAGRAPH
     #for unordered lists
-    elif block[:1] == "- ":
+    elif block[:2] == "- ":
         valid = True
         for line in block.splitlines():
-            if line[:1] != "- ":
+            if line[:2] != "- ":
                 valid = False
                 break
         if valid:
@@ -60,11 +97,11 @@ def block_to_type_no_regex(block: str) -> BlockType:
         else:
             return BlockType.PARAGRAPH
     #for ordered lists
-    elif block[:2] == "1. ":
+    elif block[:3] == "1. ":
         start = 1
         valid = True
         for line in block.splitlines():
-            if int(line[0]) != start and line[:2] != str(start) + " .":
+            if line[:3] != str(start) + ". ":
                 valid = False
                 break
             else:
