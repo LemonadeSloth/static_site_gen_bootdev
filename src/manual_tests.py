@@ -1,49 +1,25 @@
 from inline_markdown import extract_markdown_images, split_nodes_image
 from block_markdown import markdown_to_blocks, block_to_type_regex, block_to_type_no_regex
 from textnode import TextNode, TextType
+from markdown_to_html import delete_block_md_markers, markdown_to_html_node
+from block_markdown import BlockType
+
 
 md = """
-# HEadin
-
-> itme2
-> tem3
->item3
-
-- Hello
-- To
-- You
-
-- Hello
-To
-- You
-
-
-```
-code1
-```
-
 This is **bolded** paragraph
+text in a p
+tag here
 
 This is another paragraph with _italic_ text and `code` here
-This is the same paragraph on a new line   
 
-- This is a list
-- with items   
 """
 md2 = """
 ```
-code
+This is text that _should_ remain
+the **same** even with inline stuff
 ```
 """
-
-blocks = markdown_to_blocks(md)
-print(blocks)
-print("---")
-print(blocks[4])
-print("---")
-print(blocks[4][:4])
-print("---")
-print(blocks[4][-4:])
-print("---")
-print(block_to_type_no_regex(blocks[4]))
-
+res = "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>"
+html_node = markdown_to_html_node(md2)
+print(html_node.to_html())
+print(res)
