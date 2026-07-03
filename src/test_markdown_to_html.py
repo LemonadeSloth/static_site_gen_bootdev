@@ -36,22 +36,6 @@ the **same** even with inline stuff
             "<div><pre><code>This is text that _should_ remain\nthe **same** even with inline stuff\n</code></pre></div>",
         )
 
-    def test_quoteblock(self):
-        md = """
-This _is_ a test **paragraph**
-
-> This _is_
-> a
-> **test** quote
-"""
-
-        node = markdown_to_html_node(md)
-        html = node.to_html()
-        self.assertEqual(
-            html,
-            "<div><p>This <i>is</i> a test <b>paragraph</b></p><quoteblock>This <i>is</i>\na\n<b>test</b> quote</quoteblock></div>",
-        )
-
     def test_ordered_list(self):
         md = """
 This _is_ a test **paragraph**
@@ -82,4 +66,68 @@ This _is_ a test **paragraph**
         self.assertEqual(
             html,
             "<div><p>This <i>is</i> a test <b>paragraph</b></p><ul><li>This <i>is</i></li><li>a</li><li><b>test</b> list</li></ul></div>",
+        )
+    def test_lists(self):
+        md = """
+- This is a list
+- with items
+- and _more_ items
+
+1. This is an `ordered` list
+2. with items
+3. and more items
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><ul><li>This is a list</li><li>with items</li><li>and <i>more</i> items</li></ul><ol><li>This is an <code>ordered</code> list</li><li>with items</li><li>and more items</li></ol></div>",
+        )
+
+    def test_headings(self):
+        md = """
+# this is an h1
+
+this is paragraph text
+
+## this is an h2
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><h1>this is an h1</h1><p>this is paragraph text</p><h2>this is an h2</h2></div>",
+        )
+
+    def test_blockquote(self):
+        md = """
+> This is a
+> blockquote block
+
+this is paragraph text
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><blockquote>This is a blockquote block</blockquote><p>this is paragraph text</p></div>",
+        )
+    def test_paragraph(self):
+        md = """
+This is **bolded** paragraph
+text in a p
+tag here
+
+"""
+
+        node = markdown_to_html_node(md)
+        html = node.to_html()
+        self.assertEqual(
+            html,
+            "<div><p>This is <b>bolded</b> paragraph text in a p tag here</p></div>",
         )
