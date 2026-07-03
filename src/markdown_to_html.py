@@ -4,12 +4,11 @@ from inline_markdown import text_to_textnodes
 from textnode import TextNode, text_node_to_html_node
 
 
-def markdown_to_html_node(markdown: str) -> HTMLNode:
+def markdown_to_html_node(markdown: str) -> ParentNode:
     blocks = markdown_to_blocks(markdown)
     div_node = ParentNode("div", [])
     for block in blocks:
-        block_type = block_to_type_no_regex(block)
-        block_node = make_html_block_nodes(block, block_type)
+        block_node = make_html_block_nodes(block)
         div_node.children.append(block_node)
     return div_node
 
@@ -28,9 +27,13 @@ def delete_block_md_markers(text: str, block_type: BlockType) -> str:
             text_lines = text.splitlines()
             result = ""
             for line in text_lines:
+                if not line.startswith(">"):
+                    raise ValueError("invalid quote block")
                 result += f"{line[1:].strip()} "
-            return result.strip(" ")
+            return result.strip()
         case BlockType.CODE:
+            if not text.startswith("```") or not text.endswith("```"):
+                raise ValueError("invalid code block")
             return text.lstrip("`\n").rstrip("`")
         case BlockType.HEADING:
             return text
@@ -48,81 +51,47 @@ def delete_block_md_markers(text: str, block_type: BlockType) -> str:
             for line in text_lines:
                 result += line[3:] + "\n"
             return result.strip("\n")
+        case _:
+            raise ValueError("invalid block type")
 
 
-def make_html_block_nodes(block: str, block_type: BlockType) -> HTMLNode:
+def make_html_block_nodes(block: str) -> ParentNode:
+    block_type = block_to_type_no_regex(block)
     block = delete_block_md_markers(block, block_type)
     match block_type:
         case BlockType.HEADING:
-            if block.startswith("# "):
-                block_node = ParentNode("h1", [])
-                children_nodes = text_to_children(block[2:])
-                for child in children_nodes:
-                    block_node.children.append(child)
-                return block_node
-            elif block.startswith("## "):
-                block_node = ParentNode("h2", [])
-                children_nodes = text_to_children(block[3:])
-                for child in children_nodes:
-                    block_node.children.append(child)
-                return block_node
-            elif block.startswith("### "):
-                block_node = ParentNode("h3", [])
-                children_nodes = text_to_children(block[4:])
-                for child in children_nodes:
-                    block_node.children.append(child)
-                return block_node
-            elif block.startswith("#### "):
-                block_node = ParentNode("h4", [])
-                children_nodes = text_to_children(block[5:])
-                for child in children_nodes:
-                    block_node.children.append(child)
-                return block_node
-            elif block.startswith("##### "):
-                block_node = ParentNode("h5", [])
-                children_nodes = text_to_children(block[6:])
-                for child in children_nodes:
-                    block_node.children.append(child)
-                return block_node
-            else:
-                block_node = ParentNode("h6", [])
-                children_nodes = text_to_children(block[7:])
-                for child in children_nodes:
-                    block_node.children.append(child)
-                return block_node
+            level = 0
+            for char in block:
+                if char == "#":
+                    level += 1
+                else:
+                    break
+            if level + 1 >= len(block):
+                raise ValueError(f"invalid heading")
+            children_nodes = text_to_children(block[level+1:])
+            return ParentNode(f"h{level}", children_nodes)
         case BlockType.QUOTE:
-            block_node = ParentNode("blockquote", [])
             children_nodes = text_to_children(block)
-            for child in children_nodes:
-                block_node.children.append(child)
-            return block_node
+            return ParentNode("blockquote", children_nodes)
         case BlockType.PARAGRAPH:
-            block_node = ParentNode("p", [])
             children_nodes = text_to_children(block)
-            for child in children_nodes:
-                block_node.children.append(child)
-            return block_node
+            return ParentNode("p", children_nodes)
         case BlockType.ORDERED_LIST:
-            block_node = ParentNode("ol", [])
+            children = []
             split_lines = block.splitlines()
             for line in split_lines:
-                children_nodes = text_to_children(line)
-                item_node = ParentNode("li", [])
-                for child in children_nodes:
-                    item_node.children.append(child)
-                block_node.children.append(item_node)
-            return block_node
+                item_node = ParentNode("li", text_to_children(line))
+                children.append(item_node)
+            return ParentNode("ol", children)
         case BlockType.UNORDERED_LIST:
-            block_node = ParentNode("ul", [])
+            children = []
             split_lines = block.splitlines()
             for line in split_lines:
-                children_nodes = text_to_children(line)
-                item_node = ParentNode("li", [])
-                for child in children_nodes:
-                    item_node.children.append(child)
-                block_node.children.append(item_node)
-            return block_node
+                item_node = ParentNode("li", text_to_children(line))
+                children.append(item_node)
+            return ParentNode("ul", children)
         case BlockType.CODE:
             code_node = LeafNode("code", block)
-            block_node = ParentNode("pre", [code_node])
-            return block_node
+            return ParentNode("pre", [code_node])
+        case _:
+            raise ValueError("invalid block type")
