@@ -6,11 +6,11 @@ from textnode import TextNode, text_node_to_html_node
 
 def markdown_to_html_node(markdown: str) -> ParentNode:
     blocks = markdown_to_blocks(markdown)
-    div_node = ParentNode("div", [])
+    children = []
     for block in blocks:
         block_node = make_html_block_nodes(block)
-        div_node.children.append(block_node)
-    return div_node
+        children.append(block_node)
+    return ParentNode("div", children)
 
 
 def text_to_children(text: str) -> list[HTMLNode]:

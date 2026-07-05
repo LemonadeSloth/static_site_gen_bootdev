@@ -1,9 +1,9 @@
-from textnode import TextNode, TextType
-
+from copystatic import delete_public, copy_to_public
 
 def main():
-    dummy = TextNode("This is some anchor text", TextType.LINK, "https://www.boot.dev")
-    print(dummy)
+    delete_public()
+    copy_to_public()
+    # copy_to_public_v2()
 
 
 main()
