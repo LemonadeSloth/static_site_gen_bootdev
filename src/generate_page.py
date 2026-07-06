@@ -1,7 +1,7 @@
-from ntpath import isfile
+import os
 
 from markdown_to_html import markdown_to_html_node
-import os
+
 
 def extract_title(markdown: str) -> str:
     lines = markdown.splitlines()
@@ -11,14 +11,16 @@ def extract_title(markdown: str) -> str:
     raise Exception("no h1/# title")
 
 
-def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
+def generate_page(
+    from_path: str, template_path: str, dest_path: str, basepath: str
+) -> None:
     print(f"Generating page from {from_path} to {dest_path} using {template_path}")
 
     if not os.path.exists(from_path):
         raise ValueError(f"no {from_path} exists")
     with open(from_path) as md_file:
         md_content = md_file.read()
-    #print(md_content)
+    # print(md_content)
 
     if not os.path.exists(template_path):
         raise ValueError(f"no {template_path} exists")
@@ -32,16 +34,25 @@ def generate_page(from_path: str, template_path: str, dest_path: str) -> None:
 
     html_page = template_content.replace("{{ Title }}", title)
     html_page = html_page.replace("{{ Content }}", html_string)
+    html_page = html_page.replace('href="/', f'href="{basepath}')
+    html_page = html_page.replace('src="/', f'src="{basepath}')
 
     os.makedirs(os.path.dirname(dest_path), exist_ok=True)
+
     with open(dest_path, "w") as result:
         result.write(html_page)
 
-def generate_page_recursive(dir_path_content: str = "./content/", template_path: str = "./template.html", dest_dir_path: str = "./public/") -> None:
+
+def generate_page_recursive(
+    dir_path_content: str = "./content/",
+    template_path: str = "./template.html",
+    dest_dir_path: str = "./public/",
+    basepath: str = "/",
+) -> None:
 
     if not os.path.exists(dir_path_content):
         raise ValueError("invalid content path")
-    
+
     items = os.listdir(dir_path_content)
     for item in items:
         item_src_path = os.path.join(dir_path_content, item)
@@ -49,6 +60,8 @@ def generate_page_recursive(dir_path_content: str = "./content/", template_path:
         if os.path.isfile(item_src_path):
             if item.endswith(".md"):
                 item_dest_path = item_dest_path.replace(".md", ".html")
-                generate_page(item_src_path, template_path, item_dest_path)
-        else: #item is a dir
-            generate_page_recursive(item_src_path, template_path, item_dest_path)
+                generate_page(item_src_path, template_path, item_dest_path, basepath)
+        else:  # item is a dir
+            generate_page_recursive(
+                item_src_path, template_path, item_dest_path, basepath
+            )
