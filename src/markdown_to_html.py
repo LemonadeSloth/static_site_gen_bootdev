@@ -1,7 +1,7 @@
 from block_markdown import BlockType, block_to_type_no_regex, markdown_to_blocks
 from htmlnode import HTMLNode, LeafNode, ParentNode
 from inline_markdown import text_to_textnodes
-from textnode import TextNode, text_node_to_html_node
+from textnode import TextNode, text_node_to_html_node, TextType
 
 
 def markdown_to_html_node(markdown: str) -> ParentNode:
@@ -91,7 +91,9 @@ def make_html_block_nodes(block: str) -> ParentNode:
                 children.append(item_node)
             return ParentNode("ul", children)
         case BlockType.CODE:
-            code_node = LeafNode("code", block)
+            raw_text_node = TextNode(block, TextType.TEXT)
+            child = text_node_to_html_node(raw_text_node)
+            code_node = ParentNode("code", [child])
             return ParentNode("pre", [code_node])
         case _:
             raise ValueError("invalid block type")
